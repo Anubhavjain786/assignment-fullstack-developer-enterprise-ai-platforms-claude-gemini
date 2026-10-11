@@ -68,12 +68,23 @@ their own group — see `provisioning/rendered/*/permissions.json`).
 
 ## Registration (Gemini CLI)
 
+Verified with real Gemini CLI 0.63.0 (no paid account needed for this part):
+
 ```bash
 gemini extensions link ./gemini-extension
 gemini extensions config meridian-usage   # MERIDIAN_USER_EMAIL=<you>@meridianls.example
-# per-env host config: provisioning/rendered/<env>/gemini-settings.json
-gemini mcp list                           # meridian-usage: CONNECTED
+gemini mcp list
+# ✓ meridian-usage: node .../meridian-usage/connector/dist/index.js (stdio) - Connected
 ```
+
+Sandbox notes (reproducible here): this machine has no TTY, so the interactive
+`extensions link/config` prompts hang — I reproduced exactly what they do (a
+symlink, which is all `link` creates, plus env values, which is all `config`
+writes) and `mcp list` then shows the extension discovered, `${extensionPath}`
+resolved, and the MCP handshake **Connected**. In-CLI chat (`gemini -p …`)
+additionally needs `GEMINI_API_KEY`, which this sandbox has no reason to hold;
+the tool-call evidence above (same binary, same MCP stdio the CLI uses) stands
+in for it one layer down.
 
 Reproduce any run: start the service, then
 `MERIDIAN_SERVICE_URL=http://localhost:8001 APP_ENV=prod

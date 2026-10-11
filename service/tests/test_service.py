@@ -79,6 +79,12 @@ def test_periods_anchor():
     assert resolve_period("2026-09") == ("2026-09-01", "2026-10-01")
 
 
+def test_health(client):
+    r = client.get("/health")
+    assert r.status_code == 200
+    assert r.json()["status"] == "ok"
+
+
 def test_summary_shape_and_totals(client):
     r = client.get(
         "/api/usage/summary", params={"group": "clinical-operations", "period": "last_30_days"}, headers=hdr(ADMIN)

@@ -20,6 +20,11 @@ from .periods import PERIOD_RE, resolve_period
 app = FastAPI(title="Meridian Usage Service", version="1.0.0")
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok", "environment": perm.app_env()}
+
+
 def caller_from(request: Request, x_user_email: Optional[str]) -> Union[dict, JSONResponse, None]:
     email = x_user_email or request.query_params.get("as", "")
     if not email:

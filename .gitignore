@@ -4,3 +4,5 @@ node_modules/
 connector/dist/
 service/data/capabilities.json
 .DS_Store
+gemini-extension/.env
+.gemini/
