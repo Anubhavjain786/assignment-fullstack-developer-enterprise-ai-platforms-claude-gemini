@@ -1,0 +1,52 @@
+{
+  "environment": "dev",
+  "server_name": "meridian-usage-dev",
+  "scopes": {
+    "usage:read": {
+      "roles": [
+        "member",
+        "team_lead",
+        "platform_admin"
+      ],
+      "group_visibility": "all"
+    },
+    "capabilities:write": {
+      "roles": [
+        "team_lead",
+        "platform_admin"
+      ]
+    }
+  },
+  "capability_matrix": {
+    "clinical-operations": {
+      "code-execution": true,
+      "usage-connector": true,
+      "web-search": true
+    },
+    "regulatory-affairs": {
+      "code-execution": true,
+      "usage-connector": true,
+      "web-search": true
+    },
+    "finance": {
+      "code-execution": true,
+      "usage-connector": true,
+      "web-search": true
+    },
+    "hr": {
+      "code-execution": true,
+      "usage-connector": true,
+      "web-search": true
+    },
+    "medical-writing": {
+      "code-execution": true,
+      "usage-connector": true,
+      "web-search": true
+    },
+    "it-platform": {
+      "code-execution": true,
+      "usage-connector": true,
+      "web-search": true
+    }
+  }
+}

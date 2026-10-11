@@ -1,0 +1,51 @@
+{
+  "environment": "staging",
+  "server_name": "meridian-usage-staging",
+  "scopes": {
+    "usage:read": {
+      "roles": [
+        "team_lead",
+        "platform_admin"
+      ],
+      "group_visibility": "own_group"
+    },
+    "capabilities:write": {
+      "roles": [
+        "team_lead",
+        "platform_admin"
+      ]
+    }
+  },
+  "capability_matrix": {
+    "clinical-operations": {
+      "code-execution": false,
+      "usage-connector": true,
+      "web-search": true
+    },
+    "regulatory-affairs": {
+      "code-execution": false,
+      "usage-connector": true,
+      "web-search": true
+    },
+    "finance": {
+      "code-execution": false,
+      "usage-connector": true,
+      "web-search": true
+    },
+    "hr": {
+      "code-execution": false,
+      "usage-connector": true,
+      "web-search": true
+    },
+    "medical-writing": {
+      "code-execution": false,
+      "usage-connector": true,
+      "web-search": true
+    },
+    "it-platform": {
+      "code-execution": false,
+      "usage-connector": true,
+      "web-search": true
+    }
+  }
+}

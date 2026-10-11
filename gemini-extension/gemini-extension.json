@@ -1,0 +1,33 @@
+{
+  "name": "meridian-usage",
+  "version": "1.0.0",
+  "description": "Meridian usage connector — team usage and cost, scoped to your group",
+  "mcpServers": {
+    "meridian-usage": {
+      "command": "node",
+      "args": ["${extensionPath}/connector/dist/index.js"],
+      "cwd": "${extensionPath}/connector",
+      "env": {
+        "APP_ENV": "prod",
+        "MERIDIAN_SERVICE_URL": "https://meridian-usage.internal.example",
+        "MERIDIAN_USER_EMAIL": "$MERIDIAN_USER_EMAIL"
+      },
+      "timeout": 30000
+    }
+  },
+  "contextFileName": "GEMINI.md",
+  "settings": [
+    {
+      "name": "Meridian service URL",
+      "description": "Base URL of the Part A usage service for this environment",
+      "envVar": "MERIDIAN_SERVICE_URL",
+      "sensitive": false
+    },
+    {
+      "name": "Operator email",
+      "description": "Your Meridian directory email — the connector reads your groups and role from the directory",
+      "envVar": "MERIDIAN_USER_EMAIL",
+      "sensitive": false
+    }
+  ]
+}

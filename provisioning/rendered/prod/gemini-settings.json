@@ -1,0 +1,18 @@
+{
+  "$comment": "Gemini CLI host registration for meridian-usage (prod). Merge mcpServers into ~/.gemini/settings.json (user) or <project>/.gemini/settings.json (project). Each operator sets MERIDIAN_USER_EMAIL to their own directory email; the connector takes groups/role from the directory for that email.",
+  "mcpServers": {
+    "meridian-usage": {
+      "command": "node",
+      "args": [
+        "<CONNECTOR_INSTALL_DIR>/dist/index.js"
+      ],
+      "cwd": "<CONNECTOR_INSTALL_DIR>",
+      "env": {
+        "APP_ENV": "prod",
+        "MERIDIAN_SERVICE_URL": "https://meridian-usage.internal.example",
+        "MERIDIAN_USER_EMAIL": "$MERIDIAN_USER_EMAIL"
+      },
+      "timeout": 30000
+    }
+  }
+}

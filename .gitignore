@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+node_modules/
+connector/dist/
+service/data/capabilities.json
+.DS_Store

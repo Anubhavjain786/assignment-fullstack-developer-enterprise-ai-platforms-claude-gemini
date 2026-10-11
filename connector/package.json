@@ -1,0 +1,26 @@
+{
+  "name": "meridian-usage-connector",
+  "version": "1.0.0",
+  "description": "Meridian usage MCP connector (Part B) over the Part A service",
+  "type": "module",
+  "bin": {
+    "meridian-usage-connector": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "yaml": "^2.7.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  }
+}

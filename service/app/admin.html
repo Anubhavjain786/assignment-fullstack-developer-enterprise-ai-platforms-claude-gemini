@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian Usage Admin</title>
+<style>
+body { font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: .4rem .6rem; text-align: left; }
+th { background: #f4f4f4; }
+.row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
+label { display: block; font-size: .85rem; color: #444; }
+#error { color: #a00; white-space: pre-wrap; }
+button.toggle { cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>Meridian Usage Admin</h1>
+<div class="row">
+  <div><label>Acting as (simulated identity)</label><select id="user"></select></div>
+  <div><label>Group</label><select id="group"></select></div>
+  <div><label>Period</label><select id="period"></select></div>
+  <div><button id="go">Load</button></div>
+</div>
+<div id="who"></div>
+<div id="error"></div>
+<h2>Summary</h2>
+<table id="summary"><thead><tr><th>Platform</th><th>Requests</th><th>Input</th><th>Output</th><th>Total</th><th>Cost USD</th></tr></thead><tbody></tbody></table>
+<h2>By week</h2>
+<table id="weeks"><thead><tr><th>Week</th><th>Total tokens</th><th>Cost USD</th></tr></thead><tbody></tbody></table>
+<h2>Top users</h2>
+<table id="top"><thead><tr><th>User</th><th>Email</th><th>Total tokens</th><th>Cost USD</th></tr></thead><tbody></tbody></table>
+<h2>Capability controls</h2>
+<table id="caps"><thead><tr><th>Capability</th><th>Enabled</th><th>Updated</th><th>Action</th></tr></thead><tbody></tbody></table>
+<script>
+const USERS = [
+  ["priya.nair@meridianls.example","Priya Nair (lead, clinical-operations)"],
+  ["mei.chen@meridianls.example","Mei Chen (lead, regulatory-affairs)"],
+  ["sofia.rossi@meridianls.example","Sofia Rossi (lead, finance)"],
+  ["diego.alvarez@meridianls.example","Diego Alvarez (lead, hr)"],
+  ["elena.petrova@meridianls.example","Elena Petrova (lead, medical-writing)"],
+  ["kwame.mensah@meridianls.example","Kwame Mensah (lead, it-platform)"],
+  ["chloe.dubois@meridianls.example","Chloe Dubois (platform_admin)"],
+  ["arjun.mehta@meridianls.example","Arjun Mehta (platform_admin)"],
+  ["daniel.okafor@meridianls.example","Daniel Okafor (member)"]
+];
+const GROUPS = ["clinical-operations","regulatory-affairs","finance","hr","medical-writing","it-platform"];
+const PERIODS = ["last_7_days","last_30_days","2026-W36","2026-09","2026-W32"];
+const userSel = document.getElementById('user'), groupSel = document.getElementById('group'), periodSel = document.getElementById('period');
+USERS.forEach(([e,l]) => userSel.add(new Option(l, e)));
+GROUPS.forEach(g => groupSel.add(new Option(g, g)));
+PERIODS.forEach(p => periodSel.add(new Option(p, p)));
+periodSel.value = "last_30_days";
+function hdr(){ return {"X-User-Email": userSel.value}; }
+function showErr(o){ document.getElementById('error').textContent = o ? JSON.stringify(o, null, 2) : ''; }
+async function load(){
+  showErr(null);
+  const g = groupSel.value, p = periodSel.value;
+  const me = await (await fetch('/api/me', {headers: hdr()})).json();
+  document.getElementById('who').textContent = me.error ? JSON.stringify(me) : `${me.name} · ${me.role} · ${me.group_ids.join(',')} · env=${me.environment}`;
+  if (me.error) { showErr(me); return; }
+  const sum = await (await fetch(`/api/usage/summary?group=${g}&period=${p}`, {headers: hdr()})).json();
+  if (sum.error) { showErr(sum); return; }
+  document.querySelector('#summary tbody').innerHTML = sum.platforms.map(r =>
+    `<tr><td>${r.platform}</td><td>${r.requests ?? '—'}</td><td>${r.input_tokens}</td><td>${r.output_tokens}</td><td>${r.total_tokens}</td><td>$${r.cost_usd}</td></tr>`).join('')
+    + `<tr><td><b>Total</b></td><td></td><td></td><td></td><td><b>${sum.totals.total_tokens}</b></td><td><b>$${sum.totals.cost_usd}</b></td></tr>`;
+  const byw = await (await fetch(`/api/usage/by-week?group=${g}&period=${p}`, {headers: hdr()})).json();
+  document.querySelector('#weeks tbody').innerHTML = (byw.weeks||[]).map(w =>
+    `<tr><td>${w.week}</td><td>${w.total_tokens}</td><td>$${w.cost_usd}</td></tr>`).join('');
+  const top = await (await fetch(`/api/usage/top-users?group=${g}&period=${p}&limit=10`, {headers: hdr()})).json();
+  document.querySelector('#top tbody').innerHTML = (top||[]).map(u =>
+    `<tr><td>${u.name}</td><td>${u.email}</td><td>${u.total_tokens}</td><td>$${u.cost_usd}</td></tr>`).join('');
+  const cap = await (await fetch(`/api/capabilities?group=${g}`, {headers: hdr()})).json();
+  if (cap.error) { showErr(cap); return; }
+  document.querySelector('#caps tbody').innerHTML = cap.map(c =>
+    `<tr><td>${c.capability}</td><td>${c.enabled}</td><td>${c.updated_at || '—'} ${c.updated_by || ''}</td>
+     <td><button class="toggle" data-cap="${c.capability}" data-en="${!c.enabled}">${c.enabled ? 'Disable' : 'Enable'}</button></td></tr>`).join('');
+  document.querySelectorAll('button.toggle').forEach(b => b.onclick = async () => {
+    const r = await fetch(`/api/capabilities/${g}/${b.dataset.cap}`, {method: 'PUT', headers: {...hdr(), 'Content-Type': 'application/json'}, body: JSON.stringify({enabled: b.dataset.en === 'true'})});
+    const j = await r.json();
+    if (j.error) showErr(j); else load();
+  });
+}
+document.getElementById('go').onclick = load;
+load();
+</script>
+</body>
+</html>
