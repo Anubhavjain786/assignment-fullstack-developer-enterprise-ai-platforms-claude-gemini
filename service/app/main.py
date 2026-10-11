@@ -5,7 +5,6 @@ Role from the directory decides visibility; enforced in code per request.
 """
 from __future__ import annotations
 
-import re
 from typing import Optional, Union
 from pathlib import Path
 
@@ -19,8 +18,6 @@ from . import store
 from .periods import PERIOD_RE, resolve_period
 
 app = FastAPI(title="Meridian Usage Service", version="1.0.0")
-
-GROUP_IDS = set(d.group_ids())
 
 
 def caller_from(request: Request, x_user_email: Optional[str]) -> Union[dict, JSONResponse, None]:
@@ -116,7 +113,10 @@ def usage_top_users(
     denied = deny_if_connector_off(eff_group)
     if denied:
         return JSONResponse(status_code=403, content=denied)
-    start, end = resolve_period(period)
+    try:
+        start, end = resolve_period(period)
+    except ValueError:
+        return JSONResponse(status_code=400, content={"error": "invalid_period"})
     records = store.filter_records(group=eff_group, start=start, end_exclusive=end)
     return store.top_users(records, limit)
 
@@ -141,7 +141,10 @@ def usage_by_week(
     denied = deny_if_connector_off(eff_group)
     if denied:
         return JSONResponse(status_code=403, content=denied)
-    start, end = resolve_period(period)
+    try:
+        start, end = resolve_period(period)
+    except ValueError:
+        return JSONResponse(status_code=400, content={"error": "invalid_period"})
     records = store.filter_records(group=eff_group, start=start, end_exclusive=end)
     return {
         "group": eff_group,

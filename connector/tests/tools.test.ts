@@ -133,6 +133,17 @@ describe("tools over in-memory transport", () => {
     expect(JSON.parse(res.content[0].text).error).toBe("permission_denied");
   });
 
+  it("service 400 (bad period) surfaces as error, not denial", async () => {
+    process.env.MERIDIAN_USER_EMAIL = ADMIN;
+    stubFetch(() => ({ status: 400, body: { error: "invalid_period" } }));
+    const client = await linkedClient();
+    const res: any = await client.callTool({
+      name: "usage_summary",
+      arguments: { group: "hr", period: "2026-W99" },
+    });
+    expect(res.isError).toBe(true);
+    expect(JSON.parse(res.content[0].text)).toEqual({ error: "invalid_period" });
+  });
   it("rejects limit > 25 without calling the service", async () => {
     process.env.MERIDIAN_USER_EMAIL = ADMIN;
     const calls = stubFetch(() => ({ status: 200, body: [] }));

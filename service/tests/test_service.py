@@ -169,3 +169,17 @@ def test_connector_disabled_denies_reads(client):
     )
     assert r.status_code == 403
     assert "usage-connector" in r.json()["reason"]
+
+
+@pytest.mark.parametrize("period", ["2026-W99", "2026-13", "yesterday"])
+@pytest.mark.parametrize(
+    "endpoint", ["summary", "top-users", "by-week"]
+)
+def test_out_of_range_period_is_400_not_500(client, endpoint, period):
+    r = client.get(
+        f"/api/usage/{endpoint}",
+        params={"group": "clinical-operations", "period": period},
+        headers=hdr(ADMIN),
+    )
+    assert r.status_code == 400
+    assert r.json() == {"error": "invalid_period"}
